@@ -19,10 +19,10 @@ import math
 from numpy import *
 import numpy as np
 import pandas as pd
-from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
-@csrf_protect
+@csrf_exempt
 def index(request):
     
     if request.method == 'POST':

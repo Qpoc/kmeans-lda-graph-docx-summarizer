@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link
+			href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css"
+			rel="stylesheet"
+			integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We"
+			crossorigin="anonymous"
+		/>
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+		<link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/css/bootstrap4-toggle.min.css" rel="stylesheet">
+		<script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
+
+		{% load static %}
+		<link
+			rel="stylesheet"
+			type="text/css"
+			href="{% static 'summarizer/all.css' %}"
+		/>
+
+		<title>Multi Document Summarization</title>
+	</head>
+	<body class="bg-light">
+		<header>
+			<nav class="navbar navbar-expand-lg navbar-light bg-light p-3 shadow-sm">
+				<div class="container-fluid">
+					<a class="navbar-brand fw-bold ps-5" href="/"
+						>Multi Document Text Summarization
+					</a>
+					<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation" >
+						<span class="navbar-toggler-icon"></span>
+					</button>
+					<div class="collapse navbar-collapse" id="navbarNav">
+						<ul class="navbar-nav ms-auto pe-5">
+							<li class="nav-item me-4">
+								<a class="nav-link active fw-bold" aria-current="page" href="/"
+									>Summarize</a
+								>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</nav>
+		</header>
+
+		{% block content %}
+		<main class="pt-3">
+			<div class="container p-5 shadow-lg">
+				<div class="row">
+					<div class="col-12">
+						<form id="form_doc_files" action="." enctype="multipart/form-data" method="POST"> {% csrf_token %}
+							<div class="row gy-3">
+								<div class="col-6">
+									<input id="IP_doc_files" name="doc_files" type="file" class="form-control" multiple accept="application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+									/>
+									<ul class="nav nav-pills my-3" id="pills-tab" role="tablist">
+										{% for navItem in payload %}
+											{{navItem.nav_items|safe}}
+										{% endfor %}
+									</ul>
+									<div class="col-lg-12 d-flex">
+										<div class="col-lg-6 p-3 border-bottom-0 border-start-0 border-top-0 border">
+											<label for="numberSentence" class="form-label text-secondary small">
+												Select number of sentence
+											</label>
+											<select class="form-select form-select-sm" name="numberSentence" id="numberSentence">
+												<option value="8" disabled>Select number of sentence</option>
+												<option value="8" selected>8</option>
+												<option value="16">16</option>
+												<option value="32">32</option>
+												<option value="40">40</option>
+											</select>
+										</div>
+										<div class="col-lg-6 p-3" id="clusters">
+											<div class="d-flex form-check align-items-center justify-content-start">
+												<input id="isRemoveRedundant" name="isRemoveRedundant" class="form-check-input" type="checkbox" data-toggle="toggle" data-size="xs" checked/>
+												<input type="hidden" name="removeRedundant" id="removeRedundant" value="True">
+												<label for="stackedCheck1" class="form-check-label small ms-3" id="isRemoveRedundant">Remove redundant</label >
+											</div>
+											<div class="d-flex form-check align-items-center justify-content-start">
+												<input id="isDefaultClustering" class="form-check-input" type="checkbox" data-toggle="toggle" data-size="xs" />
+												<label for="stackedCheck1" class="form-check-label small ms-3" id="isDefaultClustering" >Auto clustering</label >
+											</div>
+											<div id="cluster-container">
+												<label for="numberSentence" class="form-label text-secondary small">
+													Select number of clusters
+												</label>
+												<select class="form-select form-select-sm" name="numberCluster" id="numberCluster">
+													<option value="4" disabled>Select number of clusters</option>
+													<option value="1">1</option>
+													<option value="2">2</option>
+													<option value="3">3</option>
+													<option value="4" selected>4</option>
+													<option value="5">5</option>
+												</select>
+											</div>
+										</div>
+									</div>
+									<div class="tab-content text-start mdts-h-25" id="pills-tabContent">
+										{% if length >= 0 %}
+											{% for tabItem in payload %}
+												{{tabItem.tab_panes|safe}}
+											{% endfor %}
+										{% else %}
+											<div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab" >
+												<textarea class="form-control" name="pasted-textarea" id="pasted-textarea" cols="30" rows="10" placeholder="Copy paste or upload a docx file..."></textarea>
+											</div>
+										{% endif %}
+									</div>
+								</div>
+								<div class="col-6 border-start border-primary">
+									<ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+										{%for summaries in listSummary %}
+											{%for summary in summaries%}
+												<li class="nav-item" role="presentation">
+													{% if forloop.parentloop.counter <= 1 %}
+														<button class="nav-link active" id="pills-home-tab{{forloop.parentloop.counter}}" data-bs-toggle="pill" data-bs-target="#pills-home{{forloop.parentloop.counter}}" type="button" role="tab" aria-controls="pills-home" aria-selected="true" >
+															{{ forloop.parentloop.counter }}
+														</button>
+													{% elif forloop.parentloop.counter > 1 %}
+														<button class="nav-link" id="pills-home-tab{{forloop.parentloop.counter}}" data-bs-toggle="pill" data-bs-target="#pills-home{{forloop.parentloop.counter}}" type="button" role="tab" aria-controls="pills-home" aria-selected="true" >
+															{{ forloop.parentloop.counter }}
+														</button>
+													{% endif %}
+												</li>
+											{% endfor %}
+										{% endfor %}
+									</ul>
+									<div class="tab-content text-start mdts-h-25 overflow-auto" id="pills-tabContent-2" >
+										{%for summaries in listSummary %}
+											{%for summary in summaries%}
+												{% if forloop.parentloop.counter <= 1 %}
+													<div class="tab-pane fade show active" id="pills-home{{ forloop.parentloop.counter }}" role="tabpanel" aria-labelledby="pills-home-tab{{forloop.parentloop.counter}}" >
+														<p>
+															{{summary}}
+														</p>
+													</div>
+												{% elif forloop.parentloop.counter > 1 %}
+													<div class="tab-pane fade show" id="pills-home{{ forloop.parentloop.counter }}" role="tabpanel" aria-labelledby="pills-home-tab{{forloop.parentloop.counter}}" >
+														<p>
+															{{summary}}
+														</p>
+													</div>
+												{% endif %}
+											{% endfor %}
+										{% endfor %}
+										{% if status == "error" %}{{message|safe}}{% endif %}
+									</div>
+								</div>
+								<div class="col-lg-12">
+									<h6><i>Number of Characters: <span id="numChars">0</span></i></h6>
+									<h6><i>Number of Words: <span id="numWords">0</span></i></h6>
+									{% comment %} <h6><i>Number of Sentence: <span id="numSentence">0</span></i></h6> {% endcomment %}
+								</div>
+								<div class="col-12 d-flex pt-4">
+									<button type="submit" class="btn btn-primary m-auto">
+										SUMMARIZE
+									</button>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+			<div class="container mt-5 p-5 shadow-lg">
+				<h5 class="text-secondary">Other information will be displayed here when you summarize :)</h5>
+				<div class="row mt-3">
+					<h6 class="text-secondary my-3">Bisecting K-Means Clustered Documents:</span></h6>
+					{{clusteredDocs}}
+				</div>
+				<div class="row mt-3 accordion accordion-flush" id="accordionFlushExample">
+					{% for termWeight in  termWeights %}
+						{% if forloop.counter <= 1 %}
+							<h6 class="text-secondary my-3">LDA Term Weights:</h6>
+						{% endif %}
+						<div class="col-lg-6">
+							<div class="accordion-item m-1">
+								<h2 class="accordion-header" id="flush-heading{{forloop.counter}}">
+									<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse{{forloop.counter}}" aria-expanded="false" aria-controls="flush-collapse{{forloop.counter}}">
+										Term Weights for Summary #{{forloop.counter}}
+									</button>
+								</h2>
+								<div id="flush-collapse{{forloop.counter}}" class="accordion-collapse collapse" aria-labelledby="flush-heading{{forloop.counter}}" data-bs-parent="#accordionFlushExample">
+									<div class="accordion-body">
+										{% for term in  termWeight%}
+											<p>{{forloop.counter}}. {{term}}</p>
+										{% endfor %}
+									</div>
+								</div>
+							</div>
+						</div>
+					{% endfor %}
+				</div>
+				<div class="row mt-3 accordion accordion-flush" id="sentenceWeights">
+					{% for sentences in sentenceWeights %}
+						{% if forloop.counter <= 1 %}
+							<h6 class="text-secondary my-3">Binomial Sentence Weights:</h6>
+						{% endif %}
+						<div class="col-lg-6">
+							<div class="accordion-item m-1">
+								<h2 class="accordion-header" id="sentenceWeightContainer{{forloop.counter}}">
+									<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sentenceWeight{{forloop.counter}}" aria-expanded="false" aria-controls="sentenceWeight{{forloop.counter}}">
+										Sentence Weights for Summary #{{forloop.counter}}
+									</button>
+								</h2>
+								<div id="sentenceWeight{{forloop.counter}}" class="accordion-collapse collapse" aria-labelledby="sentenceWeightContainer{{forloop.counter}}" data-bs-parent="#sentenceWeights">
+									<div class="accordion-body">
+										{% for sentence in  sentences%}
+											<p>{{sentence|safe}}</p>
+										{% endfor %}
+									</div>
+								</div>
+							</div>
+						</div>
+					{% endfor %}
+				</div>
+				{% if redundantSentences|length %}
+					<div class="row mt-3 accordion accordion-flush" id="redundantContainer">
+						{% for redundantSentence in redundantSentences %}
+							{% if forloop.counter <= 1 %}
+								<h6 class="text-secondary my-3">Redundant Sentences:</h6>
+							{% endif %}
+							<div class="col-lg-6">
+								<div class="accordion-item m-1">
+									<h2 class="accordion-header" id="redundantSentContainer{{forloop.counter}}">
+										<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#redundantSentence{{forloop.counter}}" aria-expanded="false" aria-controls="redundantSentence{{forloop.counter}}">
+											Redundant Sentences for Summary #{{forloop.counter}}
+										</button>
+									</h2>
+									<div id="redundantSentence{{forloop.counter}}" class="accordion-collapse collapse" aria-labelledby="redundantSentContainer{{forloop.counter}}" data-bs-parent="#redundantContainer">
+										<div class="accordion-body">
+											{% for redundant in  redundantSentence%}
+												<p>{{redundant|safe}}</p>
+											{% endfor %}
+										</div>
+									</div>
+								</div>
+							</div>
+						{% endfor %}
+					</div>
+				{% endif %}
+			</div>
+		</main>
+		{% endblock content %}
+
+		<script
+		src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"
+		integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj"
+			crossorigin="anonymous"
+		></script>
+
+		{% load static %}
+		<script src="{% static 'summarizer/all.js' %}"></script>
+	</body>
+</html>

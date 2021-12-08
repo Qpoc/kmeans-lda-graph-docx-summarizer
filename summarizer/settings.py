@@ -28,6 +28,24 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['pollaplous.herokuapp.com', 'localhost', '127.0.0.1']
 
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOW_CREDENTIALS = True
+
+
+CSRF_TRUSTED_ORIGINS = ['pollaplous.herokuapp.com']
+
+CORS_REPLACE_HTTPS_REFERER = True
+
+CSRF_COOKIE_DOMAIN = 'pollaplous.herokuapp.com'
+
+CORS_ORIGIN_WHITELIST = (
+    'https://pollaplous.herokuapp.com/',
+    'pollaplous.herokuapp.com',
+)
+
 
 # Application definition
 

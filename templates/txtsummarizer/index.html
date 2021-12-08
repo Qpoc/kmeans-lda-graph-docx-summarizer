@@ -51,7 +51,7 @@
 			<div class="container p-5 shadow-lg">
 				<div class="row">
 					<div class="col-12">
-						<form id="form_doc_files" action="." enctype="multipart/form-data" method="POST"> 
+						<form id="form_doc_files" action="." enctype="multipart/form-data" method="POST"> {% csrf_token %}
 							<div class="row gy-3">
 								<div class="col-6">
 									<input id="IP_doc_files" name="doc_files" type="file" class="form-control" multiple accept="application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document"

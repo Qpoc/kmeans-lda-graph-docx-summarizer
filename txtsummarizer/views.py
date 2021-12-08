@@ -22,7 +22,7 @@ import pandas as pd
 from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
-# @csrf_exempt
+@csrf_exempt
 def index(request):
     
     if request.method == 'POST':

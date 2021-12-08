@@ -19,11 +19,12 @@ import math
 from numpy import *
 import numpy as np
 import pandas as pd
+from django.views.decorators.csrf import csrf_protect
 
 # Create your views here.
-
+@csrf_protect
 def index(request):
-
+    
     if request.method == 'POST':
         files = []
         if len(request.FILES.getlist('doc_files')) > 0:
